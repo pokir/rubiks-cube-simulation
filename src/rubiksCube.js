@@ -1,8 +1,25 @@
+const RubiksCubeFace = {
+  White: 0,
+  Red: 1,
+  Blue: 2,
+  Orange: 3,
+  Green: 4,
+  Yellow: 5,
+};
+
+
+const RotationAxis = {
+  X: [1, 0, 0],
+  Y: [0, 1, 0],
+  Z: [0, 0, 1],
+};
+
+
 class RubiksCube {
   constructor(width) {
     this.width = width;
 
-    this.transform = new Transformation();
+    this.transform = new Transform();
 
     this.pieces = [];
 
@@ -140,7 +157,6 @@ class RubiksCube {
     // rotate the pieces' actual coordinate positions and their relative positions
 
     for (let i = 0; i < amount * (1 + clockwise * 2); ++i) {
-      console.log(i)
       reassignByRotatingCounterclockwise('relativePos');
     }
 
@@ -185,146 +201,3 @@ class RubiksCube {
     this.targetTransform.rotate(angle, axis)
   }
 }
-
-
-class RubiksCubePiece {
-  constructor(faces, pos, relativePos) {
-    // faces should be a RubiksCubePieceFaces instance
-    // relativePos is the position in the cube in terms of offsets from the center
-
-    this.relativePos = relativePos.copy(); // position in the cube
-
-    this.transform = new Transformation(); // the actual transform
-    this.targetTransform = new Transformation(); // the goal transform
-
-    // set the position
-    this.transform.translate(pos.x, pos.y, pos.z);
-    this.targetTransform.translate(pos.x, pos.y, pos.z);
-
-    this.faces = faces;
-  }
-
-  loop() {
-    this.transform.matrix = math.map(this.transform.matrix, (value, indexes) => {
-      const difference = this.targetTransform.matrix.get(indexes) - value;
-
-      return value + difference * 0.05;
-    });
-
-    push();
-
-    applyMatrix(this.transform.toArray());
-
-    this.faces.loop();
-
-    pop();
-  }
-}
-
-
-class RubiksCubePieceFaces {
-  constructor(whiteFace, redFace, blueFace, orangeFace, greenFace, yellowFace, width) {
-    // each parameter is a boolean
-
-    this.colors = {
-      whiteFace:   !whiteFace ? color(0, 0, 0) : color(255, 255, 255),
-      redFace:       !redFace ? color(0, 0, 0) : color(255, 0, 0),
-      blueFace:     !blueFace ? color(0, 0, 0) : color(0, 0, 255),
-      greenFace:   !greenFace ? color(0, 0, 0) : color(0, 255, 0),
-      orangeFace: !orangeFace ? color(0, 0, 0) : color(255, 128, 0),
-      yellowFace: !yellowFace ? color(0, 0, 0) : color(255, 255, 0),
-    };
-
-    this.width = width;
-
-    this.positions = {
-      whiteFace: [0, -this.width / 2, 0],
-      redFace: [-this.width / 2, 0, 0],
-      blueFace: [0, 0, this.width / 2],
-      greenFace: [0, 0, -this.width / 2],
-      orangeFace: [this.width / 2, 0, 0],
-      yellowFace: [0, this.width / 2, 0],
-    };
-
-    this.rotations = {
-      whiteFace: [90, 0],
-      redFace: [0, 90],
-      blueFace: [0, 0],
-      greenFace: [0, 0],
-      orangeFace: [0, 90],
-      yellowFace: [90, 0],
-    };
-  }
-
-  loop() {
-    push();
-
-    noStroke();
-    angleMode(DEGREES);
-
-    for (const face in this.colors) {
-      push();
-
-      fill(this.colors[face]);
-
-      translate(...this.positions[face]);
-      rotateX(this.rotations[face][0]);
-      rotateY(this.rotations[face][1]);
-
-      plane(this.width, this.width);
-
-      pop();
-    }
-
-    pop();
-  }
-}
-
-
-const RubiksCubeFace = {
-  White: 0,
-  Red: 1,
-  Blue: 2,
-  Orange: 3,
-  Green: 4,
-  Yellow: 5,
-};
-
-
-class Transformation {
-  constructor() {
-    this.matrix = math.identity(4, 4);
-  }
-
-  rotate(angle, axis) {
-    // axis must be a unit vector (example: [0, 1, 0])
-    let rotationMatrix = math.rotationMatrix(angle, axis);
-
-    // adjust the dimensions
-    rotationMatrix = math.multiply(rotationMatrix, math.identity(3,4));
-    rotationMatrix = math.concat(rotationMatrix, math.matrix([[0, 0, 0, 1]]), 0);
-
-    this.matrix = math.multiply(rotationMatrix, this.matrix);
-  }
-
-  translate(x, y, z) {
-    let translationMatrix = math.identity(4, 3);
-    translationMatrix = math.concat(
-      translationMatrix,
-      math.matrix([[x], [y], [z], [1]])
-    );
-
-    this.matrix = math.multiply(translationMatrix, this.matrix);
-  }
-
-  toArray() {
-    return math.flatten(math.transpose(this.matrix)).toArray();
-  }
-}
-
-
-const RotationAxis = {
-  X: [1, 0, 0],
-  Y: [0, 1, 0],
-  Z: [0, 0, 1],
-};
