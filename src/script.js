@@ -3,7 +3,6 @@ let cube;
 
 function setup() {
   createCanvas(600, 600, WEBGL);
-  angleMode(DEGREES);
 
   cube = new RubiksCube(150);
 }

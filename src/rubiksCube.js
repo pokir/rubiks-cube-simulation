@@ -2,30 +2,29 @@ class RubiksCube {
   constructor(width) {
     this.width = width;
 
-    this.pos = createVector(0, 0, 0);
-    this.rot = createVector(0, 0, 0);
+    this.transform = new Transformation();
 
     this.pieces = [];
 
-    for (let x_offset = -1; x_offset < 2; ++x_offset) {
-      for (let y_offset = -1; y_offset < 2; ++y_offset) {
-        for (let z_offset = -1; z_offset < 2; ++z_offset) {
+    for (let xOffset = -1; xOffset < 2; ++xOffset) {
+      for (let yOffset = -1; yOffset < 2; ++yOffset) {
+        for (let zOffset = -1; zOffset < 2; ++zOffset) {
           this.pieces.push(new RubiksCubePiece(
             new RubiksCubePieceFaces(
-              y_offset === -1, // white
-              x_offset === -1, // red
-              z_offset === 1, // blue
-              x_offset === 1, // orange
-              z_offset === -1, // green
-              y_offset === 1, // yellow
-              this.width / 3,
+              yOffset === -1, // white
+              xOffset === -1, // red
+              zOffset === 1, // blue
+              xOffset === 1, // orange
+              zOffset === -1, // green
+              yOffset === 1, // yellow
+              0.9 * this.width / 3,
             ),
             createVector(
-              1.1 * x_offset * this.width / 3,
-              1.1 * y_offset * this.width / 3,
-              1.1 * z_offset * this.width / 3
+              xOffset * this.width / 3,
+              yOffset * this.width / 3,
+              zOffset * this.width / 3
             ),
-            createVector(x_offset, y_offset, z_offset)
+            createVector(xOffset, yOffset, zOffset)
           ));
         }
       }
@@ -35,10 +34,7 @@ class RubiksCube {
   loop() {
     push();
 
-    translate(this.pos.x, this.pos.y, this.pos.z);
-    rotateX(this.rot.x);
-    rotateY(this.rot.y);
-    rotateZ(this.rot.z);
+    applyMatrix(this.transform.toArray());
 
     for (const piece of this.pieces) {
       piece.loop();
@@ -47,140 +43,135 @@ class RubiksCube {
     pop();
   }
 
-  getPieceByOffset(x_offset, y_offset, z_offset) {
+  getPieceByOffset(xOffset, yOffset, zOffset) {
     for (const piece of this.pieces) {
       if (
-        piece.relativePos.x === x_offset
-        && piece.relativePos.y === y_offset
-        && piece.relativePos.z === z_offset) {
+        piece.relativePos.x === xOffset
+        && piece.relativePos.y === yOffset
+        && piece.relativePos.z === zOffset) {
         return piece;
       }
     }
 
-    return null
+    return null;
   }
 
-  /*setPieceByOffset(x_offset, y_offset, z_offset, piece) {
-    // Sets a piece by the relative coordinates, and returns the old piece
-    // NOTE: this does not change the position or rotation of the piece
-
-    const oldPiece = this.getPieceByOffset(x_offset, y_offset, z_offset);
-
-    this.pieces[x_offset + 1][y_offset + 1][z_offset + 1] = piece;
-
-    return oldPiece;
-  }*/
-
   getPiecesOfFace(face) {
+    // TODO: it doesnt give the pices in the correct order!!
     // face must be a RubiksCubeFace
-    // Returns the pieces of the face (order: left to right, top to bottom)
+    // Returns the pieces of the face (order: left to right, top to bottom, indexing : [x][y])
 
     let selectedPieces = [];
 
-    for (let i_offset = -1; i_offset < 2; ++i_offset) {
+    for (let iOffset = -1; iOffset < 2; ++iOffset) {
       selectedPieces.push([]);
 
-      for (let j_offset = -1; j_offset < 2; ++j_offset) {
-        let x_offset;
-        let y_offset;
-        let z_offset;
+      for (let jOffset = -1; jOffset < 2; ++jOffset) {
+        let xOffset;
+        let yOffset;
+        let zOffset;
 
         switch (face) {
           case RubiksCubeFace.White:
-            x_offset = i_offset;
-            y_offset = -1;
-            z_offset = j_offset;
+            xOffset = iOffset;
+            yOffset = -1;
+            zOffset = jOffset;
             break;
 
           case RubiksCubeFace.Red:
-            x_offset = -1;
-            y_offset = i_offset;
-            z_offset = -j_offset;
+            xOffset = -1;
+            yOffset = jOffset;
+            zOffset = iOffset;
             break;
 
           case RubiksCubeFace.Blue:
-            x_offset = i_offset;
-            y_offset = j_offset;
-            z_offset = 1;
+            xOffset = iOffset;
+            yOffset = jOffset;
+            zOffset = 1;
             break;
 
           case RubiksCubeFace.Orange:
-            x_offset = 1;
-            y_offset = i_offset;
-            z_offset = j_offset;
+            xOffset = 1;
+            yOffset = jOffset;
+            zOffset = -iOffset;
             break;
 
           case RubiksCubeFace.Green:
-            x_offset = -i_offset;
-            y_offset = j_offset;
-            z_offset = -1;
+            xOffset = -iOffset;
+            yOffset = jOffset;
+            zOffset = -1;
             break;
 
           case RubiksCubeFace.Yellow:
-            x_offset = i_offset;
-            y_offset = 1;
-            z_offset = -j_offset;
+            xOffset = iOffset;
+            yOffset = 1;
+            zOffset = -jOffset;
             break;
 
           default:
             break;
         }
 
-        selectedPieces[i_offset + 1].push(this.getPieceByOffset(x_offset, y_offset, z_offset));
+        selectedPieces[iOffset + 1].push(this.getPieceByOffset(xOffset, yOffset, zOffset));
       }
     }
 
     return selectedPieces;
   }
 
-  rotateFaceClockwise(face) {
+  rotateFace(face, clockwise = true, amount = 1) {
     // clockwise is a boolean (true = clockwise, false = counterclockwise)
+    // amount is the number of turns to do
 
     let facePieces = this.getPiecesOfFace(face);
 
-    function reassignByRotating(propertyName) {
+    function reassignByRotatingCounterclockwise(propertyName) {
       [
-        facePieces[0][0][propertyName], facePieces[0][1][propertyName], facePieces[0][2][propertyName],
-        facePieces[1][0][propertyName], facePieces[1][1][propertyName], facePieces[1][2][propertyName],
-        facePieces[2][0][propertyName], facePieces[2][1][propertyName], facePieces[2][2][propertyName],
+        facePieces[0][0][propertyName], facePieces[1][0][propertyName], facePieces[2][0][propertyName],
+        facePieces[0][1][propertyName],                                 facePieces[2][1][propertyName],
+        facePieces[0][2][propertyName], facePieces[1][2][propertyName], facePieces[2][2][propertyName],
       ] = [
-        facePieces[2][0][propertyName], facePieces[1][0][propertyName], facePieces[0][0][propertyName],
-        facePieces[2][1][propertyName], facePieces[1][1][propertyName], facePieces[0][1][propertyName],
-        facePieces[2][2][propertyName], facePieces[1][2][propertyName], facePieces[0][2][propertyName],
+        facePieces[0][2][propertyName], facePieces[0][1][propertyName], facePieces[0][0][propertyName],
+        facePieces[1][2][propertyName],                                 facePieces[1][0][propertyName],
+        facePieces[2][2][propertyName], facePieces[2][1][propertyName], facePieces[2][0][propertyName],
       ];
     }
 
     // rotate the pieces' actual coordinate positions and their relative positions
-    reassignByRotating('targetPos');
-    reassignByRotating('relativePos');
+
+    for (let i = 0; i < amount * (1 + !clockwise * 2); ++i) {
+      console.log(i)
+      reassignByRotatingCounterclockwise('relativePos');
+    }
+
+    const sign = clockwise * 2 - 1;
 
     // rotate the angles
-
     for (const row of facePieces) {
       for (const piece of row) {
         switch (face) {
           case RubiksCubeFace.White:
-            piece.rotateBy(createVector(0, -90, 0));
+            piece.targetTransform.rotate(sign * amount * math.pi/2, RotationAxis.Y)
             break;
 
           case RubiksCubeFace.Red:
-            piece.rotateBy(createVector(-90, 0, 0));
+            piece.targetTransform.rotate(-sign * amount * math.pi/2, RotationAxis.X)
             break;
 
           case RubiksCubeFace.Blue:
-            piece.rotateBy(createVector(0, 0, 90));
+            piece.targetTransform.rotate(sign * amount * math.pi/2, RotationAxis.Z)
             break;
 
           case RubiksCubeFace.Orange:
-            piece.rotateBy(createVector(90, 0, 0));
+            piece.targetTransform.rotate(sign * amount * math.pi/2, RotationAxis.X)
             break;
 
           case RubiksCubeFace.Green:
-            piece.rotateBy(createVector(0, 0, -90));
+            piece.targetTransform.rotate(-sign * amount * math.pi/2, RotationAxis.Z)
             break;
 
           case RubiksCubeFace.Yellow:
-            piece.rotateBy(createVector(0, 90, 0));
+            piece.targetTransform.rotate(sign * amount * math.pi/2, RotationAxis.Y)
             break;
 
           default:
@@ -190,8 +181,8 @@ class RubiksCube {
     }
   }
 
-  rotateCubeBy(rotation) {
-    this.rot.add(rotation);
+  rotateCube(angle, axis) {
+    this.targetTransform.rotate(angle, axis)
   }
 }
 
@@ -201,35 +192,28 @@ class RubiksCubePiece {
     // colors should be a RubiksCubePieceColors instance
     // relativePos is the position in the cube in terms of offsets from the center
 
-    this.pos = pos.copy();
-    this.rot = createVector(0, 0, 0);
-    this.relativePos = relativePos.copy();
+    this.relativePos = relativePos.copy(); // position in the cube
 
-    this.targetPos = this.pos.copy();
-    this.targetRot = this.rot.copy();
+    this.transform = new Transformation(); // the actual transform
+    this.targetTransform = new Transformation(); // the goal transform
+
+    // set the position
+    this.transform.translate(pos.x, pos.y, pos.z);
+    this.targetTransform.translate(pos.x, pos.y, pos.z);
 
     this.faces = faces;
   }
 
-  rotateBy(rotation) {
-    // rotation is a 3D vector (angle on x, y, and z axes)
-    this.targetRot.add(rotation);
-
-    this.targetRot.rem(createVector(360, 360, 360));
-  }
-
   loop() {
-    // update the position and rotation towards the target position and rotation
-    this.pos.add(p5.Vector.sub(this.targetPos, this.pos).mult(0.01));
-    this.rot.add(p5.Vector.sub(this.targetRot, this.rot).mult(0.01));
+    this.transform.matrix = math.map(this.transform.matrix, (value, indexes) => {
+      const difference = this.targetTransform.matrix.get(indexes) - value;
 
-    // draw the piece
+      return value + difference * 0.05;
+    });
+
     push();
 
-    translate(this.pos.x, this.pos.y, this.pos.z);
-    rotateX(this.rot.x);
-    rotateY(this.rot.y);
-    rotateZ(this.rot.z);
+    applyMatrix(this.transform.toArray());
 
     this.faces.loop();
 
@@ -263,12 +247,12 @@ class RubiksCubePieceFaces {
     }
 
     this.rotations = {
-      whiteFace: [90, 0, 0],
-      redFace: [0, 90, 0],
-      blueFace: [0, 0, 0],
-      greenFace: [0, 0, 0],
-      orangeFace: [0, 90, 0],
-      yellowFace: [90, 0, 0],
+      whiteFace: [90, 0],
+      redFace: [0, 90],
+      blueFace: [0, 0],
+      greenFace: [0, 0],
+      orangeFace: [0, 90],
+      yellowFace: [90, 0],
     };
   }
 
@@ -286,7 +270,6 @@ class RubiksCubePieceFaces {
       translate(...this.positions[face]);
       rotateX(this.rotations[face][0]);
       rotateY(this.rotations[face][1]);
-      rotateZ(this.rotations[face][2]);
 
       plane(this.width, this.width);
 
@@ -305,4 +288,43 @@ const RubiksCubeFace = {
   Orange: 3,
   Green: 4,
   Yellow: 5,
+};
+
+
+class Transformation {
+  constructor() {
+    this.matrix = math.identity(4, 4);
+  }
+
+  rotate(angle, axis) {
+    // axis must be a unit vector (example: [0, 1, 0])
+    let rotationMatrix = math.rotationMatrix(angle, axis);
+
+    // adjust the dimensions
+    rotationMatrix = math.multiply(rotationMatrix, math.identity(3,4));
+    rotationMatrix = math.concat(rotationMatrix, math.matrix([[0, 0, 0, 1]]), 0);
+
+    this.matrix = math.multiply(rotationMatrix, this.matrix);
+  }
+
+  translate(x, y, z) {
+    let translationMatrix = math.identity(4, 3);
+    translationMatrix = math.concat(
+      translationMatrix,
+      math.matrix([[x], [y], [z], [1]])
+    );
+
+    this.matrix = math.multiply(translationMatrix, this.matrix);
+  }
+
+  toArray() {
+    return math.flatten(math.transpose(this.matrix)).toArray();
+  }
+}
+
+
+const RotationAxis = {
+  X: [1, 0, 0],
+  Y: [0, 1, 0],
+  Z: [0, 0, 1],
 };
