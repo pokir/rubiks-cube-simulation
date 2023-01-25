@@ -139,7 +139,7 @@ class RubiksCube {
 
     // rotate the pieces' actual coordinate positions and their relative positions
 
-    for (let i = 0; i < amount * (1 + !clockwise * 2); ++i) {
+    for (let i = 0; i < amount * (1 + clockwise * 2); ++i) {
       console.log(i)
       reassignByRotatingCounterclockwise('relativePos');
     }
@@ -151,7 +151,7 @@ class RubiksCube {
       for (const piece of row) {
         switch (face) {
           case RubiksCubeFace.White:
-            piece.targetTransform.rotate(sign * amount * math.pi/2, RotationAxis.Y)
+            piece.targetTransform.rotate(-sign * amount * math.pi/2, RotationAxis.Y)
             break;
 
           case RubiksCubeFace.Red:
@@ -244,7 +244,7 @@ class RubiksCubePieceFaces {
       greenFace: [0, 0, -this.width / 2],
       orangeFace: [this.width / 2, 0, 0],
       yellowFace: [0, this.width / 2, 0],
-    }
+    };
 
     this.rotations = {
       whiteFace: [90, 0],
