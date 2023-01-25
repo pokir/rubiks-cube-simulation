@@ -189,7 +189,7 @@ class RubiksCube {
 
 class RubiksCubePiece {
   constructor(faces, pos, relativePos) {
-    // colors should be a RubiksCubePieceColors instance
+    // faces should be a RubiksCubePieceFaces instance
     // relativePos is the position in the cube in terms of offsets from the center
 
     this.relativePos = relativePos.copy(); // position in the cube
