@@ -125,8 +125,6 @@ class RubiksCube {
           default:
             break;
         }
-        
-        console.log(x_offset, y_offset, z_offset);
 
         selectedPieces[i_offset + 1].push(this.getPieceByOffset(x_offset, y_offset, z_offset));
       }
@@ -153,7 +151,7 @@ class RubiksCube {
     }
 
     // rotate the pieces' actual coordinate positions and their relative positions
-    reassignByRotating('pos');
+    reassignByRotating('targetPos');
     reassignByRotating('relativePos');
 
     // rotate the angles
@@ -215,10 +213,17 @@ class RubiksCubePiece {
 
   rotateBy(rotation) {
     // rotation is a 3D vector (angle on x, y, and z axes)
-    this.rot.add(rotation);
+    this.targetRot.add(rotation);
+
+    this.targetRot.rem(createVector(360, 360, 360));
   }
 
   loop() {
+    // update the position and rotation towards the target position and rotation
+    this.pos.add(p5.Vector.sub(this.targetPos, this.pos).mult(0.01));
+    this.rot.add(p5.Vector.sub(this.targetRot, this.rot).mult(0.01));
+
+    // draw the piece
     push();
 
     translate(this.pos.x, this.pos.y, this.pos.z);
