@@ -24,7 +24,7 @@ class RubiksCube {
   constructor(width) {
     this.width = width;
 
-    this.transform = new Transform();
+    this.animationManager = new AnimationManager();
 
     this.pieces = [];
 
@@ -54,9 +54,11 @@ class RubiksCube {
   }
 
   loop() {
+    this.animationManager.loop();
+
     push();
 
-    applyMatrix(this.transform.toArray());
+    applyMatrix(this.animationManager.transform.toArray());
 
     for (const piece of this.pieces) {
       piece.loop();
@@ -184,35 +186,37 @@ class RubiksCube {
 
     const sign = clockwise * 2 - 1;
 
+    const animationDuration = 500 * amount;
+
     // rotate the angles
     for (const row of layerPieces) {
       for (const piece of row) {
         switch (layer) {
           case RubiksCubeLayer.White:
           case RubiksCubeLayer.WhiteYellow:
-            piece.targetTransform.rotate(-sign * amount * math.pi/2, RotationAxis.Y)
+            piece.animationManager.rotate(-sign * amount * math.pi/2, RotationAxis.Y, animationDuration);
             break;
 
           case RubiksCubeLayer.Red:
           case RubiksCubeLayer.RedOrange:
-            piece.targetTransform.rotate(-sign * amount * math.pi/2, RotationAxis.X)
+            piece.animationManager.rotate(-sign * amount * math.pi/2, RotationAxis.X, animationDuration);
             break;
 
           case RubiksCubeLayer.Blue:
           case RubiksCubeLayer.BlueGreen:
-            piece.targetTransform.rotate(sign * amount * math.pi/2, RotationAxis.Z)
+            piece.animationManager.rotate(sign * amount * math.pi/2, RotationAxis.Z, animationDuration);
             break;
 
           case RubiksCubeLayer.Orange:
-            piece.targetTransform.rotate(sign * amount * math.pi/2, RotationAxis.X)
+            piece.animationManager.rotate(sign * amount * math.pi/2, RotationAxis.X, animationDuration);
             break;
 
           case RubiksCubeLayer.Green:
-            piece.targetTransform.rotate(-sign * amount * math.pi/2, RotationAxis.Z)
+            piece.animationManager.rotate(-sign * amount * math.pi/2, RotationAxis.Z, animationDuration);
             break;
 
           case RubiksCubeLayer.Yellow:
-            piece.targetTransform.rotate(sign * amount * math.pi/2, RotationAxis.Y)
+            piece.animationManager.rotate(sign * amount * math.pi/2, RotationAxis.Y, animationDuration);
             break;
 
           default:
@@ -223,6 +227,6 @@ class RubiksCube {
   }
 
   rotateCube(angle, axis) {
-    this.targetTransform.rotate(angle, axis)
+    this.animationManager.rotate(angle, axis, 500);
   }
 }

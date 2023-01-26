@@ -27,4 +27,14 @@ class Transform {
   toArray() {
     return math.flatten(math.transpose(this.matrix)).toArray();
   }
+
+  copy() {
+    let copyTransform = new Transform();
+
+    copyTransform.matrix = copyTransform.matrix.map((value, index) => {
+      return this.matrix.get(index);
+    });
+
+    return copyTransform;
+  }
 }

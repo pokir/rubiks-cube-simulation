@@ -5,26 +5,20 @@ class RubiksCubePiece {
 
     this.relativePos = relativePos.copy(); // position in the cube
 
-    this.transform = new Transform(); // the actual transform
-    this.targetTransform = new Transform(); // the goal transform
+    this.animationManager = new AnimationManager();
 
     // set the position
-    this.transform.translate(pos.x, pos.y, pos.z);
-    this.targetTransform.translate(pos.x, pos.y, pos.z);
+    this.animationManager.translate(pos.x, pos.y, pos.z, true);
 
     this.faces = faces;
   }
 
   loop() {
-    this.transform.matrix = math.map(this.transform.matrix, (value, indexes) => {
-      const difference = this.targetTransform.matrix.get(indexes) - value;
-
-      return value + difference * 0.05;
-    });
+    this.animationManager.loop();
 
     push();
 
-    applyMatrix(this.transform.toArray());
+    applyMatrix(this.animationManager.transform.toArray());
 
     this.faces.loop();
 
