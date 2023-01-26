@@ -13,7 +13,7 @@ function setup() {
 function draw() {
   background(200);
 
-  orbitControl();
+  orbitControl(2, 2, 0.03);
 
   cube.loop();
 }
