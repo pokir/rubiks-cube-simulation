@@ -1,10 +1,15 @@
-const RubiksCubeFace = {
+const RubiksCubeLayer = {
   White: 0,
   Red: 1,
   Blue: 2,
   Orange: 3,
   Green: 4,
   Yellow: 5,
+
+  // middle layers (between two colored centers)
+  WhiteYellow: 6,
+  RedOrange: 7,
+  BlueGreen: 8,
 };
 
 
@@ -73,10 +78,9 @@ class RubiksCube {
     return null;
   }
 
-  getPiecesOfFace(face) {
-    // TODO: it doesnt give the pices in the correct order!!
-    // face must be a RubiksCubeFace
-    // Returns the pieces of the face (order: left to right, top to bottom, indexing : [x][y])
+  getPiecesOfLayer(layer) {
+    // layer must be a RubiksCubeLayer
+    // Returns the pieces of the layer (order: left to right, top to bottom, indexing : [x][y])
 
     let selectedPieces = [];
 
@@ -88,38 +92,56 @@ class RubiksCube {
         let yOffset;
         let zOffset;
 
-        switch (face) {
-          case RubiksCubeFace.White:
+        switch (layer) {
+          case RubiksCubeLayer.White:
             xOffset = iOffset;
             yOffset = -1;
             zOffset = jOffset;
             break;
 
-          case RubiksCubeFace.Red:
+          case RubiksCubeLayer.WhiteYellow:
+            xOffset = iOffset;
+            yOffset = 0;
+            zOffset = jOffset;
+            break;
+
+          case RubiksCubeLayer.Red:
             xOffset = -1;
             yOffset = jOffset;
             zOffset = iOffset;
             break;
 
-          case RubiksCubeFace.Blue:
+          case RubiksCubeLayer.RedOrange:
+            xOffset = 0;
+            yOffset = jOffset;
+            zOffset = iOffset;
+            break;
+
+          case RubiksCubeLayer.Blue:
             xOffset = iOffset;
             yOffset = jOffset;
             zOffset = 1;
             break;
 
-          case RubiksCubeFace.Orange:
+          case RubiksCubeLayer.BlueGreen:
+            xOffset = iOffset;
+            yOffset = jOffset;
+            zOffset = 0;
+            break;
+
+          case RubiksCubeLayer.Orange:
             xOffset = 1;
             yOffset = jOffset;
             zOffset = -iOffset;
             break;
 
-          case RubiksCubeFace.Green:
+          case RubiksCubeLayer.Green:
             xOffset = -iOffset;
             yOffset = jOffset;
             zOffset = -1;
             break;
 
-          case RubiksCubeFace.Yellow:
+          case RubiksCubeLayer.Yellow:
             xOffset = iOffset;
             yOffset = 1;
             zOffset = -jOffset;
@@ -136,21 +158,21 @@ class RubiksCube {
     return selectedPieces;
   }
 
-  rotateFace(face, clockwise = true, amount = 1) {
+  rotateLayer(layer, clockwise = true, amount = 1) {
     // clockwise is a boolean (true = clockwise, false = counterclockwise)
     // amount is the number of turns to do
 
-    let facePieces = this.getPiecesOfFace(face);
+    let layerPieces = this.getPiecesOfLayer(layer);
 
     function reassignByRotatingCounterclockwise(propertyName) {
       [
-        facePieces[0][0][propertyName], facePieces[1][0][propertyName], facePieces[2][0][propertyName],
-        facePieces[0][1][propertyName],                                 facePieces[2][1][propertyName],
-        facePieces[0][2][propertyName], facePieces[1][2][propertyName], facePieces[2][2][propertyName],
+        layerPieces[0][0][propertyName], layerPieces[1][0][propertyName], layerPieces[2][0][propertyName],
+        layerPieces[0][1][propertyName],                                 layerPieces[2][1][propertyName],
+        layerPieces[0][2][propertyName], layerPieces[1][2][propertyName], layerPieces[2][2][propertyName],
       ] = [
-        facePieces[0][2][propertyName], facePieces[0][1][propertyName], facePieces[0][0][propertyName],
-        facePieces[1][2][propertyName],                                 facePieces[1][0][propertyName],
-        facePieces[2][2][propertyName], facePieces[2][1][propertyName], facePieces[2][0][propertyName],
+        layerPieces[0][2][propertyName], layerPieces[0][1][propertyName], layerPieces[0][0][propertyName],
+        layerPieces[1][2][propertyName],                                 layerPieces[1][0][propertyName],
+        layerPieces[2][2][propertyName], layerPieces[2][1][propertyName], layerPieces[2][0][propertyName],
       ];
     }
 
@@ -163,30 +185,33 @@ class RubiksCube {
     const sign = clockwise * 2 - 1;
 
     // rotate the angles
-    for (const row of facePieces) {
+    for (const row of layerPieces) {
       for (const piece of row) {
-        switch (face) {
-          case RubiksCubeFace.White:
+        switch (layer) {
+          case RubiksCubeLayer.White:
+          case RubiksCubeLayer.WhiteYellow:
             piece.targetTransform.rotate(-sign * amount * math.pi/2, RotationAxis.Y)
             break;
 
-          case RubiksCubeFace.Red:
+          case RubiksCubeLayer.Red:
+          case RubiksCubeLayer.RedOrange:
             piece.targetTransform.rotate(-sign * amount * math.pi/2, RotationAxis.X)
             break;
 
-          case RubiksCubeFace.Blue:
+          case RubiksCubeLayer.Blue:
+          case RubiksCubeLayer.BlueGreen:
             piece.targetTransform.rotate(sign * amount * math.pi/2, RotationAxis.Z)
             break;
 
-          case RubiksCubeFace.Orange:
+          case RubiksCubeLayer.Orange:
             piece.targetTransform.rotate(sign * amount * math.pi/2, RotationAxis.X)
             break;
 
-          case RubiksCubeFace.Green:
+          case RubiksCubeLayer.Green:
             piece.targetTransform.rotate(-sign * amount * math.pi/2, RotationAxis.Z)
             break;
 
-          case RubiksCubeFace.Yellow:
+          case RubiksCubeLayer.Yellow:
             piece.targetTransform.rotate(sign * amount * math.pi/2, RotationAxis.Y)
             break;
 
