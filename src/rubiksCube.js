@@ -186,7 +186,7 @@ class RubiksCube {
 
     const sign = clockwise * 2 - 1;
 
-    const animationDuration = 500 * amount;
+    const animationDuration = 400 * amount;
 
     // rotate the angles
     for (const row of layerPieces) {

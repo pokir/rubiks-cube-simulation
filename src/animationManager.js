@@ -1,27 +1,8 @@
 class AnimationManager {
   constructor() {
+    this.animationStack = [];
+
     this.transform = new Transform(); // the current transform
-
-    this.referenceTransform = new Transform(); // to hold the initial transform
-
-    // variables for rotation
-    this.doingRotation = false;
-    this.rotationStartTime = null;
-    this.rotationDuration = null;
-    this.currentRotationAngle = null;
-    this.rotationAxis = null;
-    this.targetRotationAngle = null;
-
-    // variables for translation
-    this.doingTranslation = false;
-    this.translationStartTime = null;
-    this.translationDuration = null;
-    this.currentTranslationX = null;
-    this.currentTranslationY = null;
-    this.currentTranslationZ = null;
-    this.targetTranslationX = null;
-    this.targetTranslationY = null;
-    this.targetTranslationZ = null;
   }
 
   rotate(angle, axis, duration, cancelAnimation = false) {
@@ -32,15 +13,12 @@ class AnimationManager {
       return;
     }
 
-    this.doingRotation = true;
-    this.rotationDuration = duration;
-    this.rotationStartTime = millis();
-
-    this.referenceTransform = this.transform.copy();
-
-    this.targetRotationAngle = angle;
-    this.rotationAxis = axis;
-    this.currentRotationAngle = 0;
+    this.animationStack.push(new Animation(
+      Animation.TransformationType.Rotation,
+      duration,
+      Animation.TransitionType.Linear,
+      {angle, axis}
+    ));
   }
 
   translate(x, y, z, duration, cancelAnimation = false) {
@@ -51,59 +29,31 @@ class AnimationManager {
       return;
     }
 
-    this.doingTranslation = true;
-    this.translationDuration = duration;
-    this.translationStartTime = millis();
-
-    this.referenceTransform = this.transform.copy();
-
-    this.currentTranslationX = 0;
-    this.currentTranslationY = 0;
-    this.currentTranslationZ = 0;
-
-    this.targetTranslationX = x;
-    this.targetTranslationY = y;
-    this.targetTranslationZ = z;
+    this.animationStack.push(new Animation(
+      Animation.TransformationType.Translation,
+      duration,
+      Animation.TransitionType.Linear,
+      {x, y, z}
+    ));
   }
 
   loop() {
-    if (this.doingRotation) {
-      //this.currentRotationAngle += 0.1 * this.targetRotationAngle;
-      this.currentRotationAngle = this.targetRotationAngle * (millis() - this.rotationStartTime) / this.rotationDuration;
+    if (this.animationStack.length > 0) {
+      // keep done in a variable to make sure that this.transform reaches the
+      // final state of the animation
 
-      // ending condition
-      if (millis() - this.rotationStartTime >= this.rotationDuration) {
-        // rotate it to the target exactly
-        this.currentRotationAngle = this.targetRotationAngle;
-        this.doingRotation = false;
-      }
+      // start the animation if it hasn't started yet
+      // TODO: don't start like this; make a method to start instead
+      if (!this.animationStack[0].animationStarted)
+        this.animationStack[0].start(this.transform);
 
-      // reset the transform
-      this.transform = this.referenceTransform.copy();
+      const done = this.animationStack[0].isDone();
 
-      // then rotate it by the angle
-      this.transform.rotate(this.currentRotationAngle, this.rotationAxis);
-    }
+      this.transform = this.animationStack[0].next();
 
-    if (this.doingTranslation) {
-      this.currentTranslationX = this.targetTranslationX * (millis() - this.translationStartTime) / this.translationDuration;
-      this.currentTranslationY = this.targetTranslationY * (millis() - this.translationStartTime) / this.translationDuration;
-      this.currentTranslationZ = this.targetTranslationZ * (millis() - this.translationStartTime) / this.translationDuration;
-
-      // ending condition
-      if (millis() - this.translationStartTime > this.translationDuration) {
-        // translate it to the target exactly
-        this.currentTranslationX = this.targetTranslationX;
-        this.currentTranslationY = this.targetTranslationY;
-        this.currentTranslationZ = this.targetTranslationZ;
-        this.doingTranslation = false;
-      }
-
-      // reset the transform
-      this.transform = this.referenceTransform.copy();
-
-      // then translate it by the current translation
-      this.transform.translate(this.currentTranslationX, this.currentTranslationY, this.currentTranslationZ);
+      // remove the animation from the array if it is finished
+      if (done)
+        this.animationStack.shift();
     }
   }
 }
