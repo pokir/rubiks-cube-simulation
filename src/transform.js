@@ -37,4 +37,11 @@ class Transform {
 
     return copyTransform;
   }
+
+  set(transform) {
+    // Set the transform to be the same as another transform
+    let newSelf = transform.copy();
+
+    this.matrix = newSelf.matrix;
+  }
 }

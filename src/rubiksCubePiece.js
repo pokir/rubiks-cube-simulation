@@ -3,22 +3,21 @@ class RubiksCubePiece {
     // faces should be a RubiksCubePieceFaces instance
     // relativePos is the position in the cube in terms of offsets from the center
 
-    this.relativePos = relativePos.copy(); // position in the cube
+    // the position in the cube
+    this.relativePos = relativePos.copy();
 
-    this.animationManager = new AnimationManager();
+    this.transform = new Transform();
 
     // set the position
-    this.animationManager.translate(pos.x, pos.y, pos.z, true);
+    this.transform.translate(pos.x, pos.y, pos.z);
 
     this.faces = faces;
   }
 
   loop() {
-    this.animationManager.loop();
-
     push();
 
-    applyMatrix(this.animationManager.transform.toArray());
+    applyMatrix(this.transform.toArray());
 
     this.faces.loop();
 

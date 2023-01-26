@@ -32,9 +32,12 @@ class Animation {
     this.animationStarted = false;
   }
 
-  start(initialTransform) {
+  start(initialTransform, startTimeOverride = null) {
     // Reset the time (to start the animation)
-    this.startTime = millis();
+    if (startTimeOverride === null)
+      this.startTime = millis();
+    else
+      this.startTime = startTimeOverride
 
     // Set the initial transform
     this.initialTransform = initialTransform.copy();

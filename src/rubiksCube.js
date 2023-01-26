@@ -1,28 +1,31 @@
-const RubiksCubeLayer = {
-  White: 0,
-  Red: 1,
-  Blue: 2,
-  Orange: 3,
-  Green: 4,
-  Yellow: 5,
-
-  // middle layers (between two colored centers)
-  WhiteYellow: 6,
-  RedOrange: 7,
-  BlueGreen: 8,
-};
-
-
-const RotationAxis = {
-  X: [1, 0, 0],
-  Y: [0, 1, 0],
-  Z: [0, 0, 1],
-};
-
-
 class RubiksCube {
+  // TODO: add a way to rotate multiple layers,
+  //       and to rotate and turn a layer at the same time
+
+  static RubiksCubeLayer = {
+    White: 0,
+    Red: 1,
+    Blue: 2,
+    Orange: 3,
+    Green: 4,
+    Yellow: 5,
+
+    // middle layers (between two colored centers)
+    WhiteYellow: 6,
+    RedOrange: 7,
+    BlueGreen: 8,
+  };
+
+  static RotationAxis = {
+    X: [1, 0, 0],
+    Y: [0, 1, 0],
+    Z: [0, 0, 1],
+  };
+
   constructor(width) {
     this.width = width;
+
+    this.transform = new Transform();
 
     this.animationManager = new AnimationManager();
 
@@ -58,7 +61,7 @@ class RubiksCube {
 
     push();
 
-    applyMatrix(this.animationManager.transform.toArray());
+    applyMatrix(this.transform.toArray());
 
     for (const piece of this.pieces) {
       piece.loop();
@@ -95,55 +98,55 @@ class RubiksCube {
         let zOffset;
 
         switch (layer) {
-          case RubiksCubeLayer.White:
+          case RubiksCube.RubiksCubeLayer.White:
             xOffset = iOffset;
             yOffset = -1;
             zOffset = jOffset;
             break;
 
-          case RubiksCubeLayer.WhiteYellow:
+          case RubiksCube.RubiksCubeLayer.WhiteYellow:
             xOffset = iOffset;
             yOffset = 0;
             zOffset = jOffset;
             break;
 
-          case RubiksCubeLayer.Red:
+          case RubiksCube.RubiksCubeLayer.Red:
             xOffset = -1;
             yOffset = jOffset;
             zOffset = iOffset;
             break;
 
-          case RubiksCubeLayer.RedOrange:
+          case RubiksCube.RubiksCubeLayer.RedOrange:
             xOffset = 0;
             yOffset = jOffset;
             zOffset = iOffset;
             break;
 
-          case RubiksCubeLayer.Blue:
+          case RubiksCube.RubiksCubeLayer.Blue:
             xOffset = iOffset;
             yOffset = jOffset;
             zOffset = 1;
             break;
 
-          case RubiksCubeLayer.BlueGreen:
+          case RubiksCube.RubiksCubeLayer.BlueGreen:
             xOffset = iOffset;
             yOffset = jOffset;
             zOffset = 0;
             break;
 
-          case RubiksCubeLayer.Orange:
+          case RubiksCube.RubiksCubeLayer.Orange:
             xOffset = 1;
             yOffset = jOffset;
             zOffset = -iOffset;
             break;
 
-          case RubiksCubeLayer.Green:
+          case RubiksCube.RubiksCubeLayer.Green:
             xOffset = -iOffset;
             yOffset = jOffset;
             zOffset = -1;
             break;
 
-          case RubiksCubeLayer.Yellow:
+          case RubiksCube.RubiksCubeLayer.Yellow:
             xOffset = iOffset;
             yOffset = 1;
             zOffset = -jOffset;
@@ -160,7 +163,8 @@ class RubiksCube {
     return selectedPieces;
   }
 
-  rotateLayer(layer, clockwise = true, amount = 1) {
+  //rotateLayer(layer, clockwise = true, amount = 1) {
+  getLayerRotationAnimationTransformPairs(layer, clockwise = true, amount = 1) {
     // clockwise is a boolean (true = clockwise, false = counterclockwise)
     // amount is the number of turns to do
 
@@ -186,47 +190,83 @@ class RubiksCube {
 
     const sign = clockwise * 2 - 1;
 
-    const animationDuration = 400 * amount;
+    let animationTransformPairs = [];
 
     // rotate the angles
     for (const row of layerPieces) {
       for (const piece of row) {
+        let transformationData;
+
         switch (layer) {
-          case RubiksCubeLayer.White:
-          case RubiksCubeLayer.WhiteYellow:
-            piece.animationManager.rotate(-sign * amount * math.pi/2, RotationAxis.Y, animationDuration);
+          case RubiksCube.RubiksCubeLayer.White:
+          case RubiksCube.RubiksCubeLayer.WhiteYellow:
+            transformationData = {angle: -sign * amount * math.pi/2, axis: RubiksCube.RotationAxis.Y};
             break;
 
-          case RubiksCubeLayer.Red:
-          case RubiksCubeLayer.RedOrange:
-            piece.animationManager.rotate(-sign * amount * math.pi/2, RotationAxis.X, animationDuration);
+          case RubiksCube.RubiksCubeLayer.Red:
+          case RubiksCube.RubiksCubeLayer.RedOrange:
+            transformationData = {angle: -sign * amount * math.pi/2, axis: RubiksCube.RotationAxis.X}
             break;
 
-          case RubiksCubeLayer.Blue:
-          case RubiksCubeLayer.BlueGreen:
-            piece.animationManager.rotate(sign * amount * math.pi/2, RotationAxis.Z, animationDuration);
+          case RubiksCube.RubiksCubeLayer.Blue:
+          case RubiksCube.RubiksCubeLayer.BlueGreen:
+            transformationData = {angle: sign * amount * math.pi/2, axis: RubiksCube.RotationAxis.Z}
             break;
 
-          case RubiksCubeLayer.Orange:
-            piece.animationManager.rotate(sign * amount * math.pi/2, RotationAxis.X, animationDuration);
+          case RubiksCube.RubiksCubeLayer.Orange:
+            transformationData = {angle: sign * amount * math.pi/2, axis: RubiksCube.RotationAxis.X}
             break;
 
-          case RubiksCubeLayer.Green:
-            piece.animationManager.rotate(-sign * amount * math.pi/2, RotationAxis.Z, animationDuration);
+          case RubiksCube.RubiksCubeLayer.Green:
+            transformationData = {angle: -sign * amount * math.pi/2, axis: RubiksCube.RotationAxis.Z}
             break;
 
-          case RubiksCubeLayer.Yellow:
-            piece.animationManager.rotate(sign * amount * math.pi/2, RotationAxis.Y, animationDuration);
+          case RubiksCube.RubiksCubeLayer.Yellow:
+            transformationData = {angle: sign * amount * math.pi/2, axis: RubiksCube.RotationAxis.Y}
             break;
 
           default:
             break;
         }
+
+        animationTransformPairs.push([
+          new Animation(
+            Animation.TransformationType.Rotation,
+            400 * amount,
+            Animation.TransitionType.Linear,
+            transformationData
+          ),
+          piece.transform
+        ]);
       }
     }
+
+    return animationTransformPairs;
+  }
+
+  getCubeRotationAnimationTransformPairs(angle, axis) {
+    return [[
+      new Animation(
+        Animation.TransformationType.Rotation,
+        500,
+        Animation.TransitionType.Linear,
+        {angle, axis}
+      ),
+      this.transform
+    ]];
+  }
+
+  applyAnimationTransformPairs(animationTransformPairs) {
+    this.animationManager.addAnimations(animationTransformPairs);
+  }
+
+  rotateLayer(layer, clockwise = true, amount = 1) {
+    const animationTransformPairs = this.getLayerRotationAnimationTransformPairs(layer, clockwise, amount);
+    this.applyAnimationTransformPairs(animationTransformPairs);
   }
 
   rotateCube(angle, axis) {
-    this.animationManager.rotate(angle, axis, 500);
+    const animationTransformPairs = this.getCubeRotationAnimationTransformPairs(angle, axis);
+    this.applyAnimationTransformPairs(animationTransformPairs);
   }
 }
