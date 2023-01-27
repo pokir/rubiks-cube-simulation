@@ -162,7 +162,7 @@ class RubiksCubeController {
     );
   }
 
-  parseInstruction(instruction) {
+  parseInstruction(instruction, speed) {
     // instruction must be a string
 
     let baseMoveName;
@@ -188,7 +188,7 @@ class RubiksCubeController {
       const angle = (twice ? 2 : 1) * (clockwise * 2 - 1) * math.pi / 2;
       const axis = RubiksCube.RotationAxis[baseMoveName.toUpperCase()];
 
-      this.rubiksCube.rotateCube(angle, axis);
+      this.rubiksCube.rotateCube(angle, axis, speed);
 
       for (const faceName in this.currentFaceTransforms) {
         this.currentFaceTransforms[faceName].rotate(angle, axis);
@@ -197,7 +197,7 @@ class RubiksCubeController {
         // Slice moves
         const layer = this.getLayerFromBaseMove(baseMove);
         const flipDirection = this.flipDirectionForSliceMove(layer, baseMove);
-        this.rubiksCube.rotateLayer(layer, flipDirection ^ clockwise, twice ? 2 : 1);
+        this.rubiksCube.rotateLayer(layer, flipDirection ^ clockwise, twice ? 2 : 1, speed);
     } else {
         // Face moves
         const layer = this.getLayerFromBaseMove(baseMove);
@@ -219,7 +219,8 @@ class RubiksCubeController {
             ...this.rubiksCube.getLayerRotationAnimationTransformPairs(
               middleLayer,
               flipDirectionForMiddleLayer ^ clockwise,
-              twice ? 2 : 1
+              twice ? 2 : 1,
+              speed
             )
           );
 
@@ -227,22 +228,23 @@ class RubiksCubeController {
             ...this.rubiksCube.getLayerRotationAnimationTransformPairs(
               layer,
               clockwise,
-              twice ? 2 : 1
+              twice ? 2 : 1,
+              speed
             )
           );
 
           this.rubiksCube.applyAnimationTransformPairs(animationTransformPairs);
         } else {
-          this.rubiksCube.rotateLayer(layer, clockwise, twice ? 2 : 1);
+          this.rubiksCube.rotateLayer(layer, clockwise, twice ? 2 : 1, speed);
         }
     }
   }
 
-  parseInstructions(instructions) {
+  parseInstructions(instructions, speed) {
     // instructions must be an array of strings (example: ['R', 'L\'', 'Uw'])
 
     for (const instruction of instructions) {
-      this.parseInstruction(instruction);
+      this.parseInstruction(instruction, speed);
     }
   }
 }

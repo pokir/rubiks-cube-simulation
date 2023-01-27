@@ -165,7 +165,7 @@ class RubiksCube {
   }
 
   //rotateLayer(layer, clockwise = true, amount = 1) {
-  getLayerRotationAnimationTransformPairs(layer, clockwise = true, amount = 1) {
+  getLayerRotationAnimationTransformPairs(layer, clockwise = true, amount = 1, speed = 1 / 400) {
     // clockwise is a boolean (true = clockwise, false = counterclockwise)
     // amount is the number of turns to do
 
@@ -233,7 +233,7 @@ class RubiksCube {
         animationTransformPairs.push([
           new Animation(
             Animation.TransformationType.Rotation,
-            400 * amount,
+            amount / speed,
             Animation.TransitionType.Linear,
             transformationData
           ),
@@ -245,11 +245,11 @@ class RubiksCube {
     return animationTransformPairs;
   }
 
-  getCubeRotationAnimationTransformPairs(angle, axis) {
+  getCubeRotationAnimationTransformPairs(angle, axis, speed = 1 / 400) {
     return [[
       new Animation(
         Animation.TransformationType.Rotation,
-        500,
+        1 / speed,
         Animation.TransitionType.Linear,
         {angle, axis}
       ),
@@ -261,13 +261,22 @@ class RubiksCube {
     this.animationManager.addAnimations(animationTransformPairs);
   }
 
-  rotateLayer(layer, clockwise = true, amount = 1) {
-    const animationTransformPairs = this.getLayerRotationAnimationTransformPairs(layer, clockwise, amount);
+  rotateLayer(layer, clockwise, amount, speed) {
+    const animationTransformPairs = this.getLayerRotationAnimationTransformPairs(
+      layer,
+      clockwise,
+      amount,
+      speed
+    );
     this.applyAnimationTransformPairs(animationTransformPairs);
   }
 
-  rotateCube(angle, axis) {
-    const animationTransformPairs = this.getCubeRotationAnimationTransformPairs(angle, axis);
+  rotateCube(angle, axis, speed) {
+    const animationTransformPairs = this.getCubeRotationAnimationTransformPairs(
+      angle,
+      axis,
+      speed
+    );
     this.applyAnimationTransformPairs(animationTransformPairs);
   }
 }

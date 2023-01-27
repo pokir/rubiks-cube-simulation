@@ -23,10 +23,12 @@ class AnimationManager {
       }
 
       for (const [animation, transform] of this.animationStack[0]) {
-        transform.set(animation.next());
-
+        // checking if it is done before applying the next frame of the
+        // animation ensures that the animation will finish completely
         if (!animation.isDone())
           done = false;
+
+        transform.set(animation.next());
       }
 
       // remove the animations from the stack if all are finished
