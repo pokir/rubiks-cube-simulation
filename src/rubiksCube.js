@@ -230,7 +230,8 @@ class RubiksCube {
           new Animation(
             Animation.TransformationType.Rotation,
             amount / speed,
-            Animation.TransitionType.Linear,
+            //Animation.TransitionType.Linear,
+            Animation.TransitionType.Sine,
             transformationData
           ),
           piece.transform
@@ -246,7 +247,8 @@ class RubiksCube {
       new Animation(
         Animation.TransformationType.Rotation,
         1 / speed,
-        Animation.TransitionType.Linear,
+        //Animation.TransitionType.Linear,
+        Animation.TransitionType.Sine,
         {angle, axis}
       ),
       this.transform

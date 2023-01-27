@@ -6,6 +6,7 @@ class Animation {
 
   static TransitionType = {
     Linear: 0,
+    Sine: 1,
   };
 
   constructor(transformationType, duration, transitionType, targetTransformationData) {
@@ -65,6 +66,10 @@ class Animation {
       switch (this.transitionType) {
         case Animation.TransitionType.Linear:
           return min + (max - min) * timeSpent / this.duration;
+          break;
+
+        case Animation.TransitionType.Sine:
+          return min + (max - min) * (1 - Math.cos(timeSpent * Math.PI / this.duration)) / 2;
           break;
 
         default:
