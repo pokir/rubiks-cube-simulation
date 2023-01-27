@@ -190,7 +190,6 @@ class RubiksCube {
 
     let animationTransformPairs = [];
 
-    // rotate the angles
     for (const row of layerPieces) {
       for (const piece of row) {
         let transformationData;
