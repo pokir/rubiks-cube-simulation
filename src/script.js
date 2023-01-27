@@ -29,4 +29,10 @@ function draw() {
   orbitControl(2, 2, 0.03);
 
   cube.loop();
+
+  // reference point for the front face
+  noStroke();
+  fill(255, 255, 0);
+  translate(0, 0, 200);
+  sphere(5);
 }
