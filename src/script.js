@@ -16,6 +16,10 @@ function setup() {
       alert('Invalid move!');
     }
   });
+
+  document.querySelector('#shuffleButton').addEventListener('click', () => {
+    controller.shuffle();
+  });
 }
 
 

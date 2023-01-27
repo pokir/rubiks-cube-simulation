@@ -247,4 +247,27 @@ class RubiksCubeController {
       this.parseInstruction(instruction, speed);
     }
   }
+
+  shuffle(numberOfMoves = 40) {
+    let instructions = [];
+
+    const layerRotationMoves = Object.keys(RubiksCubeController.BaseMove)
+      .filter(move => !['x', 'y', 'z'].includes(move));
+
+    for (let i = 0; i < numberOfMoves; ++i) {
+      const randomIndex = Math.floor(Math.random() * layerRotationMoves.length);
+
+      let move = layerRotationMoves[randomIndex];
+
+      if (Math.random() < 0.1)
+        move += 'w';
+
+      if (Math.random() < 0.5)
+        move += '\'';
+
+      instructions.push(move);
+    }
+
+    this.parseInstructions(instructions, 1 / 100);
+  }
 }
