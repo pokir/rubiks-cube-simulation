@@ -3,6 +3,7 @@ class RubiksCube {
   //       and to rotate and turn a layer at the same time
 
   static RubiksCubeLayer = {
+    // NOTE: the colors are only for the starting rubiks cube (they can change)
     White: 0,
     Red: 1,
     Blue: 2,
@@ -170,7 +171,7 @@ class RubiksCube {
 
     let layerPieces = this.getPiecesOfLayer(layer);
 
-    function reassignByRotatingCounterclockwise(propertyName) {
+    const reassignByRotatingCounterclockwise = propertyName => {
       [
         layerPieces[0][0][propertyName], layerPieces[1][0][propertyName], layerPieces[2][0][propertyName],
         layerPieces[0][1][propertyName],                                 layerPieces[2][1][propertyName],
@@ -180,7 +181,7 @@ class RubiksCube {
         layerPieces[1][2][propertyName],                                 layerPieces[1][0][propertyName],
         layerPieces[2][2][propertyName], layerPieces[2][1][propertyName], layerPieces[2][0][propertyName],
       ];
-    }
+    };
 
     // rotate the pieces' actual coordinate positions and their relative positions
 

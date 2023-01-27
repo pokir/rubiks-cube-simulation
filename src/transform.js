@@ -24,6 +24,11 @@ class Transform {
     this.matrix = math.multiply(translationMatrix, this.matrix);
   }
 
+  extractTranslation() {
+    // Get the current translation of the transform in the form [x, y, z]
+    return this.matrix.columns()[3].toArray().slice(0, 3).map(arr => arr[0]);
+  }
+
   toArray() {
     return math.flatten(math.transpose(this.matrix)).toArray();
   }
