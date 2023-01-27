@@ -7,6 +7,15 @@ function setup() {
 
   cube = new RubiksCube(150);
   controller = new RubiksCubeController(cube);
+
+  document.querySelector('#moveInput').addEventListener('change', () => {
+    try {
+      controller.parseInstructions(document.querySelector('#moveInput').value.trim().replace(/\s\s+/g, ' ').split(' '));
+      document.querySelector('#moveInput').value = '';
+    } catch (error) {
+      alert('Invalid move!');
+    }
+  });
 }
 
 

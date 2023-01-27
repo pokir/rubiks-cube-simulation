@@ -1,7 +1,4 @@
 class RubiksCube {
-  // TODO: add a way to rotate multiple layers,
-  //       and to rotate and turn a layer at the same time
-
   static RubiksCubeLayer = {
     // NOTE: the colors are only for the starting rubiks cube (they can change)
     White: 0,
