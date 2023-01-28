@@ -74,7 +74,7 @@ class Animation {
           break;
 
         case Animation.TransitionType.Quad:
-          return min + (Math.sqrt(max) * timeSpent / this.duration) ** 2
+          return min + (Math.sqrt(max - min) * timeSpent / this.duration) ** 2
           break;
 
         default:
