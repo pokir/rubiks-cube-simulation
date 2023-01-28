@@ -7,6 +7,7 @@ class Animation {
   static TransitionType = {
     Linear: 0,
     Sine: 1,
+    Quad: 1,
   };
 
   constructor(transformationType, duration, transitionType, targetTransformationData) {
@@ -70,6 +71,10 @@ class Animation {
 
         case Animation.TransitionType.Sine:
           return min + (max - min) * (1 - Math.cos(timeSpent * Math.PI / this.duration)) / 2;
+          break;
+
+        case Animation.TransitionType.Quad:
+          return min + (Math.sqrt(max) * timeSpent / this.duration) ** 2
           break;
 
         default:
