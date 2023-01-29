@@ -14,14 +14,18 @@ class RubiksCube {
     BlueGreen: 8,
   };
 
-  static RotationAxis = {
+  static Axis = {
     X: [1, 0, 0],
     Y: [0, 1, 0],
     Z: [0, 0, 1],
   };
 
-  constructor(width) {
+  constructor(width, dimensions) {
+    // width is the size of the cube
+    // dimensions is an integer (3 for 3x3 Rubik's Cube, 4 for 4x4 Rubik's Cube, etc.)
+
     this.width = width;
+    this.dimensions = dimensions;
 
     this.transform = new Transform();
 
@@ -29,23 +33,28 @@ class RubiksCube {
 
     this.pieces = [];
 
-    for (let xOffset = -1; xOffset < 2; ++xOffset) {
-      for (let yOffset = -1; yOffset < 2; ++yOffset) {
-        for (let zOffset = -1; zOffset < 2; ++zOffset) {
+    for (let xOffset = 0; xOffset < this.dimensions; ++xOffset) {
+      for (let yOffset = 0; yOffset < this.dimensions; ++yOffset) {
+        for (let zOffset = 0; zOffset < this.dimensions; ++zOffset) {
+
+          // if it is a hidden piece, don't bother creating it (to reduce lag)
+          if (![xOffset, yOffset, zOffset].includes(0) && ![xOffset, yOffset, zOffset].includes(this.dimensions - 1))
+            continue;
+
           this.pieces.push(new RubiksCubePiece(
             new RubiksCubePieceFaces(
-              yOffset === -1, // white
-              xOffset === -1, // red
-              zOffset === 1, // blue
-              xOffset === 1, // orange
-              zOffset === -1, // green
-              yOffset === 1, // yellow
-              0.9 * this.width / 3,
+              yOffset === 0,                   // white
+              xOffset === 0,                   // red
+              zOffset === this.dimensions - 1, // blue
+              xOffset === this.dimensions - 1, // orange
+              zOffset === 0,                   // green
+              yOffset === this.dimensions - 1, // yellow
+              0.9 * this.width / 3
             ),
             createVector(
-              xOffset * this.width / 3,
-              yOffset * this.width / 3,
-              zOffset * this.width / 3
+              (xOffset - this.dimensions / 2 + 1 / 2) * this.width / 3,
+              (yOffset - this.dimensions / 2 + 1 / 2) * this.width / 3,
+              (zOffset - this.dimensions / 2 + 1 / 2) * this.width / 3
             ),
             createVector(xOffset, yOffset, zOffset)
           ));
@@ -69,11 +78,15 @@ class RubiksCube {
   }
 
   getPieceByOffset(xOffset, yOffset, zOffset) {
+    if (![xOffset, yOffset, zOffset].every(v => v >= 0 && v < this.dimensions))
+      throw new Error('relative position is not in valid range');
+
     for (const piece of this.pieces) {
       if (
-        piece.relativePos.x === xOffset
-        && piece.relativePos.y === yOffset
-        && piece.relativePos.z === zOffset) {
+        // NOTE: .toString() is needed to compare arrays
+        piece.relativePos.extractTranslation().toString()
+        === [xOffset, yOffset, zOffset].toString()
+      ) {
         return piece;
       }
     }
@@ -81,110 +94,31 @@ class RubiksCube {
     return null;
   }
 
-  getPiecesOfLayer(layer) {
-    // layer must be a RubiksCubeLayer
+  getPiecesOfLayer(layerAxis, layerIndex) {
+    // layerAxis must be an Axis
     // Returns the pieces of the layer (order: left to right, top to bottom, indexing : [x][y])
 
     let selectedPieces = [];
 
-    for (let iOffset = -1; iOffset < 2; ++iOffset) {
+    for (let iOffset = 0; iOffset < this.dimensions; ++iOffset) {
       selectedPieces.push([]);
 
-      for (let jOffset = -1; jOffset < 2; ++jOffset) {
-        let xOffset;
-        let yOffset;
-        let zOffset;
+      for (let jOffset = 0; jOffset < this.dimensions; ++jOffset) {
+        let relativePosition = [iOffset, jOffset];
+        relativePosition.splice(layerAxis.indexOf(1), 0, layerIndex);
 
-        switch (layer) {
-          case RubiksCube.RubiksCubeLayer.White:
-            xOffset = iOffset;
-            yOffset = -1;
-            zOffset = jOffset;
-            break;
-
-          case RubiksCube.RubiksCubeLayer.WhiteYellow:
-            xOffset = iOffset;
-            yOffset = 0;
-            zOffset = jOffset;
-            break;
-
-          case RubiksCube.RubiksCubeLayer.Red:
-            xOffset = -1;
-            yOffset = jOffset;
-            zOffset = iOffset;
-            break;
-
-          case RubiksCube.RubiksCubeLayer.RedOrange:
-            xOffset = 0;
-            yOffset = jOffset;
-            zOffset = iOffset;
-            break;
-
-          case RubiksCube.RubiksCubeLayer.Blue:
-            xOffset = iOffset;
-            yOffset = jOffset;
-            zOffset = 1;
-            break;
-
-          case RubiksCube.RubiksCubeLayer.BlueGreen:
-            xOffset = iOffset;
-            yOffset = jOffset;
-            zOffset = 0;
-            break;
-
-          case RubiksCube.RubiksCubeLayer.Orange:
-            xOffset = 1;
-            yOffset = jOffset;
-            zOffset = -iOffset;
-            break;
-
-          case RubiksCube.RubiksCubeLayer.Green:
-            xOffset = -iOffset;
-            yOffset = jOffset;
-            zOffset = -1;
-            break;
-
-          case RubiksCube.RubiksCubeLayer.Yellow:
-            xOffset = iOffset;
-            yOffset = 1;
-            zOffset = -jOffset;
-            break;
-
-          default:
-            break;
-        }
-
-        selectedPieces[iOffset + 1].push(this.getPieceByOffset(xOffset, yOffset, zOffset));
+        selectedPieces[iOffset].push(this.getPieceByOffset(...relativePosition));
       }
     }
 
     return selectedPieces;
   }
 
-  //rotateLayer(layer, clockwise = true, amount = 1) {
-  getLayerRotationAnimationTransformPairs(layer, clockwise = true, amount = 1, speed = 1 / 400) {
+  getLayerRotationAnimationTransformPairs(layerAxis, layerIndex, clockwise = true, amount = 1, speed = 1 / 400) {
     // clockwise is a boolean (true = clockwise, false = counterclockwise)
     // amount is the number of turns to do
 
-    let layerPieces = this.getPiecesOfLayer(layer);
-
-    const reassignByRotatingCounterclockwise = propertyName => {
-      [
-        layerPieces[0][0][propertyName], layerPieces[1][0][propertyName], layerPieces[2][0][propertyName],
-        layerPieces[0][1][propertyName],                                 layerPieces[2][1][propertyName],
-        layerPieces[0][2][propertyName], layerPieces[1][2][propertyName], layerPieces[2][2][propertyName],
-      ] = [
-        layerPieces[0][2][propertyName], layerPieces[0][1][propertyName], layerPieces[0][0][propertyName],
-        layerPieces[1][2][propertyName],                                 layerPieces[1][0][propertyName],
-        layerPieces[2][2][propertyName], layerPieces[2][1][propertyName], layerPieces[2][0][propertyName],
-      ];
-    };
-
-    // rotate the pieces' actual coordinate positions and their relative positions
-
-    for (let i = 0; i < amount * (1 + clockwise * 2); ++i) {
-      reassignByRotatingCounterclockwise('relativePos');
-    }
+    let layerPieces = this.getPiecesOfLayer(layerAxis, layerIndex);
 
     const sign = clockwise * 2 - 1;
 
@@ -192,47 +126,27 @@ class RubiksCube {
 
     for (const row of layerPieces) {
       for (const piece of row) {
-        let transformationData;
+        // ignore hidden pieces
+        if (piece === null)
+          continue;
 
-        switch (layer) {
-          case RubiksCube.RubiksCubeLayer.White:
-          case RubiksCube.RubiksCubeLayer.WhiteYellow:
-            transformationData = {angle: -sign * amount * math.pi/2, axis: RubiksCube.RotationAxis.Y};
-            break;
+        // rotate the selected layer around the center of the cube
+        piece.relativePos.translate(-this.dimensions / 2 + 1 / 2, -this.dimensions / 2 + 1 / 2, -this.dimensions / 2 + 1 / 2);
+        piece.relativePos.rotate(amount * sign * Math.PI / 2, layerAxis);
+        piece.relativePos.translate(this.dimensions / 2 - 1 / 2, this.dimensions / 2 - 1 / 2, this.dimensions / 2 - 1 / 2);
 
-          case RubiksCube.RubiksCubeLayer.Red:
-          case RubiksCube.RubiksCubeLayer.RedOrange:
-            transformationData = {angle: -sign * amount * math.pi/2, axis: RubiksCube.RotationAxis.X}
-            break;
+        // round the values because the rotation is not exact
+        // NOTE: this does not edit the relativePos object (and shouldn't
+        piece.relativePos.matrix = math.round(piece.relativePos.matrix)
 
-          case RubiksCube.RubiksCubeLayer.Blue:
-          case RubiksCube.RubiksCubeLayer.BlueGreen:
-            transformationData = {angle: sign * amount * math.pi/2, axis: RubiksCube.RotationAxis.Z}
-            break;
-
-          case RubiksCube.RubiksCubeLayer.Orange:
-            transformationData = {angle: sign * amount * math.pi/2, axis: RubiksCube.RotationAxis.X}
-            break;
-
-          case RubiksCube.RubiksCubeLayer.Green:
-            transformationData = {angle: -sign * amount * math.pi/2, axis: RubiksCube.RotationAxis.Z}
-            break;
-
-          case RubiksCube.RubiksCubeLayer.Yellow:
-            transformationData = {angle: sign * amount * math.pi/2, axis: RubiksCube.RotationAxis.Y}
-            break;
-
-          default:
-            break;
-        }
-
+        // add the animation
         animationTransformPairs.push([
           new Animation(
             Animation.TransformationType.Rotation,
             amount / speed,
             //Animation.TransitionType.Linear,
             Animation.TransitionType.Sine,
-            transformationData
+            {angle: sign * amount * Math.PI / 2, axis: layerAxis}
           ),
           piece.transform
         ]);
@@ -259,9 +173,10 @@ class RubiksCube {
     this.animationManager.addAnimations(animationTransformPairs);
   }
 
-  rotateLayer(layer, clockwise, amount, speed) {
+  rotateLayer(layerAxis, layerIndex, clockwise, amount, speed) {
     const animationTransformPairs = this.getLayerRotationAnimationTransformPairs(
-      layer,
+      layerAxis,
+      layerIndex,
       clockwise,
       amount,
       speed

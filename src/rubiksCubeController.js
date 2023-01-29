@@ -186,7 +186,7 @@ class RubiksCubeController {
     if (['x', 'y', 'z'].includes(baseMoveName)) {
       // Cube rotation moves
       const angle = (twice ? 2 : 1) * (clockwise * 2 - 1) * math.pi / 2;
-      const axis = RubiksCube.RotationAxis[baseMoveName.toUpperCase()];
+      const axis = RubiksCube.Axis[baseMoveName.toUpperCase()];
 
       this.rubiksCube.rotateCube(angle, axis, speed);
 

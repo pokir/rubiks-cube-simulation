@@ -5,7 +5,7 @@ let controller;
 function setup() {
   createCanvas(600, 600, WEBGL);
 
-  cube = new RubiksCube(150);
+  cube = new RubiksCube(150, 3);
   controller = new RubiksCubeController(cube);
 
   document.querySelector('#moveInput').addEventListener('change', () => {
