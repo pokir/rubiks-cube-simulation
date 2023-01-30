@@ -34,12 +34,12 @@ class RubiksCube {
               xOffset === this.dimensions - 1, // orange
               zOffset === 0,                   // green
               yOffset === this.dimensions - 1, // yellow
-              0.9 * this.width / 3
+              0.9 * this.width / this.dimensions
             ),
             createVector(
-              (xOffset - this.dimensions / 2 + 1 / 2) * this.width / 3,
-              (yOffset - this.dimensions / 2 + 1 / 2) * this.width / 3,
-              (zOffset - this.dimensions / 2 + 1 / 2) * this.width / 3
+              (xOffset - this.dimensions / 2 + 1 / 2) * this.width / this.dimensions,
+              (yOffset - this.dimensions / 2 + 1 / 2) * this.width / this.dimensions,
+              (zOffset - this.dimensions / 2 + 1 / 2) * this.width / this.dimensions
             ),
             createVector(xOffset, yOffset, zOffset)
           ));
