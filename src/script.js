@@ -5,7 +5,9 @@ let controller;
 function setup() {
   createCanvas(600, 600, WEBGL);
 
-  cube = new RubiksCube(150, 3);
+  let numLayers = Number.parseInt(prompt('How many layers should the Rubik\'s Cube have? (default is 3)')) || 3;
+
+  cube = new RubiksCube(150, numLayers);
   controller = new RubiksCubeController(cube);
 
   document.querySelector('#moveInput').addEventListener('change', () => {

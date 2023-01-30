@@ -159,18 +159,23 @@ class RubiksCubeController {
     }
   }
 
-  shuffle(numberOfMoves = 40) {
+  shuffle(numberOfMoves = this.rubiksCube.dimensions * 13) {
     let instructions = [];
 
     const layerRotationMoves = RubiksCubeController.BaseMoves
-      .filter(move => !['x', 'y', 'z'].includes(move));
+      .filter(move => !['M', 'E', 'S', 'x', 'y', 'z'].includes(move));
 
     for (let i = 0; i < numberOfMoves; ++i) {
       const randomIndex = Math.floor(Math.random() * layerRotationMoves.length);
 
       let move = layerRotationMoves[randomIndex];
 
-      if (!['M', 'E', 'S'].includes(move) && Math.random() < 0.1)
+      let layerNumber = 1 + Math.floor(Math.random() * this.rubiksCube.dimensions);
+
+      if (layerNumber > 1)
+        move = `${layerNumber}${move}`
+
+      if (Math.random() < 0.1)
         move += 'w';
 
       if (Math.random() < 0.5)
