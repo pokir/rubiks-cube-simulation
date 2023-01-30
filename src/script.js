@@ -5,7 +5,7 @@ let controller;
 function setup() {
   createCanvas(600, 600, WEBGL);
 
-  let numLayers = Number.parseInt(prompt('How many layers should the Rubik\'s Cube have? (default is 3)')) || 3;
+  let numLayers = Number.parseInt(prompt('How many layers should the Rubik\'s Cube have (default 3)? (note big cubes may cause lag or crash your browser)')) || 3;
 
   cube = new RubiksCube(150, numLayers);
   controller = new RubiksCubeController(cube);
