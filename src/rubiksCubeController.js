@@ -1,18 +1,5 @@
 class RubiksCubeController {
-  static BaseMove = {
-    'U': 0,
-    'D': 1,
-    'R': 2,
-    'L': 3,
-    'F': 4,
-    'B': 5,
-    'M': 6,
-    'E': 7,
-    'S': 8,
-    'x': 9,
-    'y': 10,
-    'z': 11
-  };
+  static BaseMoves = ['U', 'D', 'R', 'L', 'F', 'B', 'M', 'E', 'S', 'x', 'y', 'z'];
 
   static OriginalFacePositions = {
     White: [0, -1, 0],
@@ -56,188 +43,112 @@ class RubiksCubeController {
     }
   }
 
-  getLayerFromBaseMove(baseMove) {
-    // Returns the RubiksCube layer for the baseMove relative to the current
-    // cube orientation
-
-    let facePosition = [];
-    let isSliceMove = false;
-
-    switch (baseMove) {
-      case RubiksCubeController.BaseMove.U:
-        facePosition = RubiksCubeController.OriginalFacePositions.White;
-        break;
-      case RubiksCubeController.BaseMove.D:
-        facePosition = RubiksCubeController.OriginalFacePositions.Yellow;
-        break;
-      case RubiksCubeController.BaseMove.L:
-        facePosition = RubiksCubeController.OriginalFacePositions.Red;
-        break;
-      case RubiksCubeController.BaseMove.R:
-        facePosition = RubiksCubeController.OriginalFacePositions.Orange;
-        break;
-      case RubiksCubeController.BaseMove.F:
-        facePosition = RubiksCubeController.OriginalFacePositions.Blue;
-        break;
-      case RubiksCubeController.BaseMove.B:
-        facePosition = RubiksCubeController.OriginalFacePositions.Green;
-        break;
-      case RubiksCubeController.BaseMove.M:
-        facePosition = RubiksCubeController.OriginalFacePositions.Red;
-        isSliceMove = true;
-        break;
-      case RubiksCubeController.BaseMove.E:
-        facePosition = RubiksCubeController.OriginalFacePositions.White;
-        isSliceMove = true;
-        break;
-      case RubiksCubeController.BaseMove.S:
-        facePosition = RubiksCubeController.OriginalFacePositions.Green;
-        isSliceMove = true;
-        break;
-
-      default:
-        break;
-    }
-
-    let selectedLayerName;
-
-    // find the layer name from the layer position
-    for (const faceName in this.currentFaceTransforms) {
-      if (
-        this.currentFaceTransforms[faceName].extractTranslation()
-          .every((value, index) => {
-            // round the value because the transformation is not exact
-            return Math.round(value) === facePosition[index];
-          })
-      ) {
-        selectedLayerName = faceName;
-        break;
-      }
-    }
-
-    // if it is a slice, get the middle layer instead
-    if (isSliceMove)
-      return this.getMiddleLayerNextToFaceLayer(RubiksCube.RubiksCubeLayer[selectedLayerName]);
-
-    return RubiksCube.RubiksCubeLayer[selectedLayerName];
-  }
-
-  flipDirectionForSliceMove(middleLayer, baseMove) {
-    // Returns a boolean for whether to flip the direction of the rotation or not
-    // for a slice move
-    // middleLayer: the middle layer to turn for the slice move
-    // baseMove: the slice move
-
-    // get the layer next to the middle layer
-    let adjacentFace;
-
-    switch (baseMove) {
-      case RubiksCubeController.BaseMove.M:
-        adjacentFace = this.getLayerFromBaseMove(RubiksCubeController.BaseMove.L);
-        break;
-
-      case RubiksCubeController.BaseMove.E:
-        adjacentFace = this.getLayerFromBaseMove(RubiksCubeController.BaseMove.D);
-        break;
-
-      case RubiksCubeController.BaseMove.S:
-        adjacentFace = this.getLayerFromBaseMove(RubiksCubeController.BaseMove.F);
-        break;
-
-      default:
-        break;
-    }
-
-    return (
-      (
-        middleLayer === RubiksCube.RubiksCubeLayer.WhiteYellow
-        && adjacentFace === RubiksCube.RubiksCubeLayer.Yellow
-      ) || (
-        middleLayer === RubiksCube.RubiksCubeLayer.BlueGreen
-        && adjacentFace === RubiksCube.RubiksCubeLayer.Green
-      ) || (
-        middleLayer === RubiksCube.RubiksCubeLayer.RedOrange
-        && adjacentFace === RubiksCube.RubiksCubeLayer.Orange
-      )
-    );
-  }
-
   parseInstruction(instruction, speed) {
     // instruction must be a string
 
-    let baseMoveName;
+    const normalMoveRegex = /^(\d*)([LRFBUD])(w?)(2?)('?)$/;
+    const sliceMoveRegex = /^([MES])(2?)('?)$/;
+    const rotationMoveRegex = /^([xyz])(2?)('?)$/;
+
+    let axis;
+    let startLayerIndex;
+    let endLayerIndex;
+    let layerOffset = 0;
     let clockwise = true;
     let wide = false;
     let twice = false;
 
-    for (const character of instruction) {
-      if (character === '\'')
-        clockwise = false;
-      else if (character === 'w')
-        wide = true;
-      else if (character === '2')
-        twice = true;
-      else
-        baseMoveName = character;
-    }
+    let match;
 
-    let baseMove = RubiksCubeController.BaseMove[baseMoveName];
+    if ((match = instruction.match(normalMoveRegex)) !== null) {
+      const wide = match[3] === 'w';
 
-    if (['x', 'y', 'z'].includes(baseMoveName)) {
-      // Cube rotation moves
-      const angle = (twice ? 2 : 1) * (clockwise * 2 - 1) * math.pi / 2;
-      const axis = RubiksCube.Axis[baseMoveName.toUpperCase()];
+      axis = RubiksCube.Axis[{
+        'L': 'X', 'R': 'X',
+        'U': 'Y', 'D': 'Y',
+        'F': 'Z', 'B': 'Z'
+      }[match[2]]];
 
-      this.rubiksCube.rotateCube(angle, axis, speed);
+      let layerOffset = 0;
 
-      for (const faceName in this.currentFaceTransforms) {
-        this.currentFaceTransforms[faceName].rotate(angle, axis);
+      if (match[1])
+        layerOffset = Number.parseInt(match[1]) - 1;
+
+      if (layerOffset === 0 && wide)
+        layerOffset += 1;
+
+      if (['R', 'F', 'D'].includes(match[2])) {
+        startLayerIndex = this.rubiksCube.dimensions - 1 - layerOffset;
+
+        if (wide)
+          endLayerIndex = this.rubiksCube.dimensions - 1;
+        else
+          endLayerIndex = startLayerIndex;
+      } else {
+        endLayerIndex = layerOffset;
+
+        if (wide)
+          startLayerIndex = 0;
+        else
+          startLayerIndex = endLayerIndex
       }
-    } else if (['M', 'E', 'S'].includes(baseMoveName)) {
-        // Slice moves
-        const layer = this.getLayerFromBaseMove(baseMove);
-        const flipDirection = this.flipDirectionForSliceMove(layer, baseMove);
-        this.rubiksCube.rotateLayer(layer, flipDirection ^ clockwise, twice ? 2 : 1, speed);
+
+      if (match[4])
+        twice = true;
+
+      if (match[5])
+        clockwise = false;
+
+      // flip the direction for some faces
+      clockwise ^= ['L', 'B', 'U'].includes(match[2]);
+
+    } else if ((match = instruction.match(sliceMoveRegex)) !== null) {
+      axis = RubiksCube.Axis[{'M': 'X', 'E': 'Y', 'S': 'Z'}[match[1]]];
+
+      startLayerIndex = Math.floor(this.rubiksCube.dimensions / 2);
+      endLayerIndex = startLayerIndex;
+
+      if (match[2])
+        twice = true;
+
+      if (match[3])
+        clockwise = false;
+
+      // flip the direction for M
+      clockwise ^= match[1] === 'M';
+
+    } else if ((match = instruction.match(rotationMoveRegex)) !== null) {
+      axis = RubiksCube.Axis[match[1].toUpperCase()];
+
+      startLayerIndex = 0;
+      endLayerIndex = this.rubiksCube.dimensions - 1;
+
+      if (match[2])
+        twice = true;
+
+      if (match[3])
+        clockwise = false;
+
     } else {
-        // Face moves
-        const layer = this.getLayerFromBaseMove(baseMove);
-
-        if (wide) {
-          let middleLayer = this.getMiddleLayerNextToFaceLayer(layer);
-
-          const flipDirectionForMiddleLayer = (
-            [
-              RubiksCubeController.BaseMove.D,
-              RubiksCubeController.BaseMove.R,
-              RubiksCubeController.BaseMove.B
-            ].includes(baseMove)
-          );
-
-          const animationTransformPairs = [];
-
-          animationTransformPairs.push(
-            ...this.rubiksCube.getLayerRotationAnimationTransformPairs(
-              middleLayer,
-              flipDirectionForMiddleLayer ^ clockwise,
-              twice ? 2 : 1,
-              speed
-            )
-          );
-
-          animationTransformPairs.push(
-            ...this.rubiksCube.getLayerRotationAnimationTransformPairs(
-              layer,
-              clockwise,
-              twice ? 2 : 1,
-              speed
-            )
-          );
-
-          this.rubiksCube.applyAnimationTransformPairs(animationTransformPairs);
-        } else {
-          this.rubiksCube.rotateLayer(layer, clockwise, twice ? 2 : 1, speed);
-        }
+      console.log(instruction);
+      throw Error('invalid Rubik\'s cube move');
     }
+
+    const animationTransformPairs = [];
+
+    for (let i = startLayerIndex; i < endLayerIndex + 1; ++i) {
+      animationTransformPairs.push(
+        ...this.rubiksCube.getLayerRotationAnimationTransformPairs(
+          axis,
+          i,
+          clockwise,
+          twice ? 2 : 1,
+          speed
+        )
+      );
+    }
+
+    this.rubiksCube.applyAnimationTransformPairs(animationTransformPairs);
   }
 
   parseInstructions(instructions, speed) {
@@ -251,7 +162,7 @@ class RubiksCubeController {
   shuffle(numberOfMoves = 40) {
     let instructions = [];
 
-    const layerRotationMoves = Object.keys(RubiksCubeController.BaseMove)
+    const layerRotationMoves = RubiksCubeController.BaseMoves
       .filter(move => !['x', 'y', 'z'].includes(move));
 
     for (let i = 0; i < numberOfMoves; ++i) {
@@ -259,7 +170,7 @@ class RubiksCubeController {
 
       let move = layerRotationMoves[randomIndex];
 
-      if (Math.random() < 0.1)
+      if (!['M', 'E', 'S'].includes(move) && Math.random() < 0.1)
         move += 'w';
 
       if (Math.random() < 0.5)

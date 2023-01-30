@@ -1,19 +1,4 @@
 class RubiksCube {
-  static RubiksCubeLayer = {
-    // NOTE: the colors are only for the starting rubiks cube (they can change)
-    White: 0,
-    Red: 1,
-    Blue: 2,
-    Orange: 3,
-    Green: 4,
-    Yellow: 5,
-
-    // middle layers (between two colored centers)
-    WhiteYellow: 6,
-    RedOrange: 7,
-    BlueGreen: 8,
-  };
-
   static Axis = {
     X: [1, 0, 0],
     Y: [0, 1, 0],
@@ -156,19 +141,6 @@ class RubiksCube {
     return animationTransformPairs;
   }
 
-  getCubeRotationAnimationTransformPairs(angle, axis, speed = 1 / 400) {
-    return [[
-      new Animation(
-        Animation.TransformationType.Rotation,
-        1 / speed,
-        //Animation.TransitionType.Linear,
-        Animation.TransitionType.Sine,
-        {angle, axis}
-      ),
-      this.transform
-    ]];
-  }
-
   applyAnimationTransformPairs(animationTransformPairs) {
     this.animationManager.addAnimations(animationTransformPairs);
   }
@@ -179,15 +151,6 @@ class RubiksCube {
       layerIndex,
       clockwise,
       amount,
-      speed
-    );
-    this.applyAnimationTransformPairs(animationTransformPairs);
-  }
-
-  rotateCube(angle, axis, speed) {
-    const animationTransformPairs = this.getCubeRotationAnimationTransformPairs(
-      angle,
-      axis,
       speed
     );
     this.applyAnimationTransformPairs(animationTransformPairs);
