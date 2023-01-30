@@ -48,15 +48,17 @@ class RubiksCube {
     }
   }
 
-  loop() {
-    this.animationManager.loop();
+  update() {
+    this.animationManager.update();
+  }
 
+  draw() {
     push();
 
     applyMatrix(this.transform.toArray());
 
     for (const piece of this.pieces) {
-      piece.loop();
+      piece.draw();
     }
 
     pop();

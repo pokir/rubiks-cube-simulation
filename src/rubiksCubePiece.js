@@ -14,12 +14,12 @@ class RubiksCubePiece {
     this.faces = faces;
   }
 
-  loop() {
+  draw() {
     push();
 
     applyMatrix(this.transform.toArray());
 
-    this.faces.loop();
+    this.faces.draw();
 
     pop();
   }

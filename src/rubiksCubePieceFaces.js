@@ -32,7 +32,7 @@ class RubiksCubePieceFaces {
     };
   }
 
-  loop() {
+  draw() {
     push();
 
     noStroke();

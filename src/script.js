@@ -30,7 +30,8 @@ function draw() {
 
   orbitControl(2, 2, 0.03);
 
-  cube.loop();
+  cube.draw();
+  cube.update();
 
   // reference point for the front face
   noStroke();

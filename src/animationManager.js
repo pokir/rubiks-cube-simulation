@@ -11,7 +11,7 @@ class AnimationManager {
     this.animationStack.push(animationTransformPairs);
   }
 
-  loop() {
+  update() {
     if (this.animationStack.length > 0) {
       let done = true;
 
