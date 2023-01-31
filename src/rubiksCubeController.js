@@ -12,20 +12,6 @@ class RubiksCubeController {
 
   constructor(rubiksCube) {
     this.rubiksCube = rubiksCube;
-
-    // store the face positions to know how the cube is oriented
-
-    this.currentFaceTransforms = {};
-
-    for (const layerName in RubiksCube.RubiksCubeLayer) {
-      // skip the middle layers
-      if (!RubiksCubeController.OriginalFacePositions.hasOwnProperty(layerName))
-        continue;
-
-      let transform = new Transform();
-      transform.translate(...RubiksCubeController.OriginalFacePositions[layerName]);
-      this.currentFaceTransforms[layerName] = transform;
-    }
   }
 
   getMiddleLayerNextToFaceLayer(faceLayer) {
