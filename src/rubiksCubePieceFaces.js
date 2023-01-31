@@ -23,12 +23,12 @@ class RubiksCubePieceFaces {
     };
 
     this.rotations = {
-      whiteFace: [90, 0],
-      redFace: [0, 90],
+      whiteFace: [Math.PI / 2, 0],
+      redFace: [0, Math.PI / 2],
       blueFace: [0, 0],
       greenFace: [0, 0],
-      orangeFace: [0, 90],
-      yellowFace: [90, 0],
+      orangeFace: [0, Math.PI / 2],
+      yellowFace: [Math.PI / 2, 0],
     };
   }
 
@@ -36,7 +36,6 @@ class RubiksCubePieceFaces {
     push();
 
     noStroke();
-    angleMode(DEGREES);
 
     for (const face in this.colors) {
       push();
