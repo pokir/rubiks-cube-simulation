@@ -23,6 +23,7 @@ class RubiksCubePieceFaces {
     };
 
     this.rotations = {
+      // x axis rotation, then y axis rotation
       whiteFace: [Math.PI / 2, 0],
       redFace: [0, Math.PI / 2],
       blueFace: [0, 0],
