@@ -12,28 +12,29 @@ class AnimationManager {
   }
 
   update() {
-    if (this.animationStack.length > 0) {
-      let done = true;
+    if (this.animationStack.length === 0)
+      return;
 
-      // start all the animations at once
-      const startTime = millis();
-      for (const [animation, transform] of this.animationStack[0]) {
-        if (!animation.animationStarted)
-          animation.start(transform, startTime);
-      }
+    let done = true;
 
-      for (const [animation, transform] of this.animationStack[0]) {
-        // checking if it is done before applying the next frame of the
-        // animation ensures that the animation will finish completely
-        if (!animation.isDone())
-          done = false;
-
-        transform.set(animation.next());
-      }
-
-      // remove the animations from the stack if all are finished
-      if (done)
-        this.animationStack.shift();
+    // start all the animations at once
+    const startTime = millis();
+    for (const [animation, transform] of this.animationStack[0]) {
+      if (!animation.animationStarted)
+        animation.start(transform, startTime);
     }
+
+    for (const [animation, transform] of this.animationStack[0]) {
+      // checking if it is done before applying the next frame of the
+      // animation ensures that the animation will finish completely
+      if (!animation.isDone())
+        done = false;
+
+      transform.set(animation.next());
+    }
+
+    // remove the animations from the stack if all are finished
+    if (done)
+      this.animationStack.shift();
   }
 }

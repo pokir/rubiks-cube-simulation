@@ -14,20 +14,20 @@ class RubiksCubePieceFaces {
     this.width = width;
 
     this.positions = {
-      whiteFace: [0, -this.width / 2, 0],
-      redFace: [-this.width / 2, 0, 0],
-      blueFace: [0, 0, this.width / 2],
-      greenFace: [0, 0, -this.width / 2],
+      whiteFace:  [0, -this.width / 2, 0],
+      redFace:    [-this.width / 2, 0, 0],
+      blueFace:   [0, 0, this.width / 2],
+      greenFace:  [0, 0, -this.width / 2],
       orangeFace: [this.width / 2, 0, 0],
       yellowFace: [0, this.width / 2, 0],
     };
 
     this.rotations = {
       // x axis rotation, then y axis rotation
-      whiteFace: [Math.PI / 2, 0],
-      redFace: [0, Math.PI / 2],
-      blueFace: [0, 0],
-      greenFace: [0, 0],
+      whiteFace:  [Math.PI / 2, 0],
+      redFace:    [0, Math.PI / 2],
+      blueFace:   [0, 0],
+      greenFace:  [0, 0],
       orangeFace: [0, Math.PI / 2],
       yellowFace: [Math.PI / 2, 0],
     };
