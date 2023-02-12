@@ -15,14 +15,14 @@ class AnimationManager {
     if (this.animationStack.length === 0)
       return;
 
-    let done = true;
-
     // start all the animations at once
     const startTime = millis();
     for (const [animation, transform] of this.animationStack[0]) {
       if (!animation.animationStarted)
         animation.start(transform, startTime);
     }
+
+    let done = true;
 
     for (const [animation, transform] of this.animationStack[0]) {
       // checking if it is done before applying the next frame of the
